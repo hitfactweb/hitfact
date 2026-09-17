@@ -144,30 +144,25 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-12 text-center space-y-4 shadow-xs">
               <ShieldCheck className="w-12 h-12 text-brand-red mx-auto" />
               <div className="space-y-1">
-                <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Editorial Feed Ready</h3>
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
+                  {selectedCategory ? `No Stories in ${selectedCategory}` : "No Stories Published Yet"}
+                </h3>
                 <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-md mx-auto leading-relaxed">
                   {selectedCategory
-                    ? `No publications found under the "${selectedCategory}" desk. You can reset the filter or publish new stories.`
-                    : "The publication feed is clean, active, and ready for verified stories. Use the Admin CMS to publish."}
+                    ? `There are currently no verified reports published under the "${selectedCategory}" desk.`
+                    : "Verified fact-checks, investigative reports, and media analyses will appear here as soon as they are published."}
                 </p>
               </div>
-              <div className="flex items-center justify-center gap-3 pt-2">
-                {selectedCategory ? (
+              {selectedCategory && (
+                <div className="flex items-center justify-center pt-2">
                   <Link
                     href="/"
                     className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white rounded-xl text-xs font-bold transition-colors"
                   >
-                    Reset Filter
+                    View All Stories
                   </Link>
-                ) : (
-                  <Link
-                    href="/admin/posts/new"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-red hover:bg-brand-redDark text-white rounded-xl text-xs font-bold transition-colors shadow-md"
-                  >
-                    <PlusCircle className="w-4 h-4" /> Create First Story / Check
-                  </Link>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -79,11 +79,6 @@ export const Footer: React.FC = () => {
                 Public Research Survey
               </Link>
             </li>
-            <li>
-              <Link href="/admin" className="text-brand-red hover:text-brand-redDark font-bold transition-colors">
-                Editorial Staff Portal
-              </Link>
-            </li>
           </ul>
         </div>
 
