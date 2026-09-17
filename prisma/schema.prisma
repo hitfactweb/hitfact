@@ -1,0 +1,308 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String    @id @default(uuid())
+  email       String    @unique
+  name        String
+  role        String    @default("USER") // SUPER_ADMIN, EDITOR, FACT_CHECKER, MODERATOR, USER
+  status      String    @default("ACTIVE") // ACTIVE, BANNED, SUSPENDED
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  profile     Profile?
+  posts       Post[]
+  comments    Comment[]
+  likes       Like[]
+  saves       Save[]
+  commentLikes CommentLike[]
+  pollVotes   PollVote[]
+  quizAttempts QuizAttempt[]
+  formSubmissions FormSubmission[]
+}
+
+model Profile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  username    String   @unique
+  displayName String
+  bio         String?
+  avatar      String?
+  visibility  String   @default("PUBLIC") // PUBLIC, PRIVATE
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  color       String?  @default("#ED1C24")
+  sortOrder   Int      @default(0)
+  posts       Post[]
+}
+
+model Tag {
+  id    String @id @default(uuid())
+  name  String @unique
+  slug  String @unique
+  posts PostTag[]
+}
+
+model PostTag {
+  postId String
+  tagId  String
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+}
+
+model Post {
+  id              String      @id @default(uuid())
+  slug            String      @unique
+  type            String      @default("STANDARD") // STANDARD, ARTICLE, FACT_CHECK, EXPLAINER, POLL
+  title           String
+  caption         String?
+  mediaUrls       String?     // JSON array of image/video URLs
+  status          String      @default("PUBLISHED") // DRAFT, REVIEW, FACT_CHECK, APPROVED, SCHEDULED, PUBLISHED, ARCHIVED
+  authorId        String
+  author          User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  categoryId      String?
+  category        Category?   @relation(fields: [categoryId], references: [id])
+  commentsEnabled Boolean     @default(true)
+  featured        Boolean     @default(false)
+  views           Int         @default(0)
+  sharesCount     Int         @default(0)
+  publishedAt     DateTime?   @default(now())
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  tags            PostTag[]
+  article         Article?
+  factCheck       FactCheck?
+  poll            Poll?
+  likes           Like[]
+  saves           Save[]
+  comments        Comment[]
+}
+
+model Article {
+  id        String   @id @default(uuid())
+  postId    String   @unique
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  summary   String
+  body      String   // Full markdown or HTML text
+  readingTime Int    @default(3)
+  sourcesJson String? // JSON list of sources [{ title, url, publisher }]
+}
+
+model FactCheck {
+  id                String    @id @default(uuid())
+  postId            String    @unique
+  post              Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  claim             String
+  claimant          String
+  claimDate         String?
+  claimSource       String?
+  context           String?
+  evidence          String
+  analysis          String
+  verdict           String    // TRUE, FALSE, MISLEADING, PARTLY_TRUE, UNVERIFIED
+  sourcesJson       String?   // JSON list of citations
+  correctionHistory String?
+  reviewedBy        String?
+  reviewedAt        DateTime?
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+}
+
+model Save {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  postId    String
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+  body      String
+  status    String    @default("ACTIVE") // ACTIVE, HIDDEN, FLAGGED, DELETED
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  likes     CommentLike[]
+}
+
+model CommentLike {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commentId String
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, commentId])
+}
+
+model Poll {
+  id               String       @id @default(uuid())
+  postId           String?      @unique
+  post             Post?        @relation(fields: [postId], references: [id], onDelete: Cascade)
+  question         String
+  description      String?
+  allowMultiple    Boolean      @default(false)
+  requireLogin     Boolean      @default(false)
+  endsAt           DateTime?
+  options          PollOption[]
+  votes            PollVote[]
+  createdAt        DateTime     @default(now())
+}
+
+model PollOption {
+  id        String     @id @default(uuid())
+  pollId    String
+  poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  label     String
+  sortOrder Int        @default(0)
+  votes     PollVote[]
+}
+
+model PollVote {
+  id        String     @id @default(uuid())
+  pollId    String
+  poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  optionId  String
+  option    PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  voterKey  String?
+  createdAt DateTime   @default(now())
+
+  @@index([pollId, voterKey])
+  @@index([pollId, userId])
+}
+
+model Quiz {
+  id          String         @id @default(uuid())
+  title       String
+  description String
+  slug        String         @unique
+  timeLimit   Int?           // In seconds
+  passMark    Int            @default(70)
+  published   Boolean        @default(true)
+  questions   QuizQuestion[]
+  attempts    QuizAttempt[]
+  createdAt   DateTime       @default(now())
+}
+
+model QuizQuestion {
+  id          String       @id @default(uuid())
+  quizId      String
+  quiz        Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  question    String
+  explanation String
+  sortOrder   Int          @default(0)
+  options     QuizOption[]
+}
+
+model QuizOption {
+  id         String       @id @default(uuid())
+  questionId String
+  question   QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  label      String
+  isCorrect  Boolean      @default(false)
+}
+
+model QuizAttempt {
+  id          String   @id @default(uuid())
+  quizId      String
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  score       Int
+  total       Int
+  completedAt DateTime @default(now())
+}
+
+model Form {
+  id          String           @id @default(uuid())
+  title       String
+  slug        String           @unique
+  description String
+  status      String           @default("PUBLISHED") // DRAFT, PUBLISHED, CLOSED
+  fields      FormField[]
+  submissions FormSubmission[]
+  createdAt   DateTime         @default(now())
+}
+
+model FormField {
+  id          String   @id @default(uuid())
+  formId      String
+  form        Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  fieldType   String   // TEXT, TEXTAREA, SELECT, RADIO, CHECKBOX, RATING
+  label       String
+  placeholder String?
+  required    Boolean  @default(false)
+  optionsJson String?  // JSON array of strings for SELECT/RADIO
+  sortOrder   Int      @default(0)
+}
+
+model FormSubmission {
+  id          String   @id @default(uuid())
+  formId      String
+  form        Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  answersJson String   // JSON object of { fieldId: value }
+  createdAt   DateTime @default(now())
+}
+
+model Report {
+  id         String   @id @default(uuid())
+  reporterId String?
+  targetType String   // POST, COMMENT, USER
+  targetId   String
+  reason     String   // FALSE_INFO, SPAM, HARASSMENT, HATE, OTHER
+  details    String?
+  status     String   @default("PENDING") // PENDING, RESOLVED, DISMISSED
+  createdAt  DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String
+  action     String   // CREATE_POST, UPDATE_VERDICT, BAN_USER, DELETE_COMMENT
+  targetType String
+  targetId   String
+  metadata   String?
+  createdAt  DateTime @default(now())
+}

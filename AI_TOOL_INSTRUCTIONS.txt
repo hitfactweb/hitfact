@@ -1,0 +1,15 @@
+HITFACT — QUICK START FOR AI CODING TOOLS
+
+1. Read README.md
+2. Read PRD.md
+3. Read ARCHITECTURE.md
+4. Read DATABASE_SCHEMA.md
+5. Read ADMIN_PANEL.md
+6. Read UI_SPEC.md
+7. Read API_SPEC.md
+8. Read SECURITY.md
+9. Read ROADMAP.md
+10. Then read MASTER_PROMPT.md and execute it.
+
+Do not start by generating random UI only. First inspect the architecture and create the foundation.
+After each phase, update the documentation and report changed files, migrations, environment variables, tests and next steps.
