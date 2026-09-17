@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -22,6 +23,13 @@ import {
   LogIn,
   Sun,
   Moon,
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  AtSign,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
 
 export const Header: React.FC = () => {
@@ -41,6 +49,34 @@ export const Header: React.FC = () => {
   const [passwordInput, setPasswordInput] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [usernameInput, setUsernameInput] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Prevent background scrolling and enable ESC key to close modal
+  useEffect(() => {
+    if (showAuthModal) {
+      document.body.style.overflow = "hidden";
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          setShowAuthModal(false);
+          setAuthError(null);
+        }
+      };
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.body.style.overflow = "";
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [showAuthModal]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,23 +87,41 @@ export const Header: React.FC = () => {
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (authMode === "login") {
-      if (emailInput.trim()) {
+    setAuthError(null);
+    setIsSubmitting(true);
+    try {
+      if (authMode === "login") {
+        if (!emailInput.trim()) {
+          setAuthError("Please enter your email address.");
+          return;
+        }
         const res = await login(emailInput.trim(), passwordInput);
         if (res.success) {
           setShowAuthModal(false);
           setEmailInput("");
           setPasswordInput("");
+          setAuthError(null);
+        } else {
+          setAuthError(res.error || "Invalid credentials. Please verify your staff email or password.");
+        }
+      } else {
+        if (!nameInput.trim() || !emailInput.trim() || !usernameInput.trim()) {
+          setAuthError("Please fill in all required fields.");
+          return;
+        }
+        const success = register(nameInput.trim(), emailInput.trim(), usernameInput.trim());
+        if (success) {
+          setShowAuthModal(false);
+          setNameInput("");
+          setEmailInput("");
+          setUsernameInput("");
+          setAuthError(null);
+        } else {
+          setAuthError("Registration failed. Please check your details and try again.");
         }
       }
-    } else {
-      if (nameInput.trim() && emailInput.trim() && usernameInput.trim()) {
-        register(nameInput.trim(), emailInput.trim(), usernameInput.trim());
-        setShowAuthModal(false);
-        setNameInput("");
-        setEmailInput("");
-        setUsernameInput("");
-      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -257,9 +311,10 @@ export const Header: React.FC = () => {
             <button
               onClick={() => {
                 setAuthMode("login");
+                setAuthError(null);
                 setShowAuthModal(true);
               }}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-zinc-900 dark:bg-zinc-800 hover:bg-zinc-800 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors shadow-xs"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-brand-red hover:bg-brand-redDark text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-xs hover:shadow-md cursor-pointer"
             >
               <LogIn className="w-3.5 h-3.5" />
               Sign In
@@ -267,115 +322,6 @@ export const Header: React.FC = () => {
           )}
         </div>
       </div>
-
-      {/* Auth Modal (Sign In / Register) */}
-      {showAuthModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl relative text-zinc-900 dark:text-white">
-            <button
-              onClick={() => setShowAuthModal(false)}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-700 dark:hover:text-white p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"
-              aria-label="Close"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="space-y-1 mb-5">
-              <h3 className="text-lg font-bold">
-                {authMode === "login" ? "Sign In to HITFACT" : "Create Account"}
-              </h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                {authMode === "login"
-                  ? "Access your account and saved investigations."
-                  : "Join independent, evidence-driven media."}
-              </p>
-            </div>
-
-            <form onSubmit={handleAuthSubmit} className="space-y-3.5">
-              {authMode === "register" && (
-                <>
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase text-zinc-600 dark:text-zinc-400 mb-1">Full Name</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Your Name"
-                      value={nameInput}
-                      onChange={(e) => setNameInput(e.target.value)}
-                      className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-900 dark:text-white focus:border-brand-red focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold uppercase text-zinc-600 dark:text-zinc-400 mb-1">Username</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="username"
-                      value={usernameInput}
-                      onChange={(e) => setUsernameInput(e.target.value)}
-                      className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-900 dark:text-white focus:border-brand-red focus:outline-none"
-                    />
-                  </div>
-                </>
-              )}
-
-              <div>
-                <label className="block text-[11px] font-bold uppercase text-zinc-600 dark:text-zinc-400 mb-1">Email Address</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="name@example.com"
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-900 dark:text-white focus:border-brand-red focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold uppercase text-zinc-600 dark:text-zinc-400 mb-1">Password</label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={passwordInput}
-                  onChange={(e) => setPasswordInput(e.target.value)}
-                  className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-900 dark:text-white focus:border-brand-red focus:outline-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-2.5 bg-brand-red hover:bg-brand-redDark text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-colors shadow-md mt-2"
-              >
-                {authMode === "login" ? "Sign In" : "Register"}
-              </button>
-            </form>
-
-            <div className="mt-4 pt-3 border-t border-zinc-200 dark:border-zinc-800 text-center text-xs text-zinc-500">
-              {authMode === "login" ? (
-                <span>
-                  Don&apos;t have an account?{" "}
-                  <button
-                    onClick={() => setAuthMode("register")}
-                    className="text-brand-red hover:underline font-bold"
-                  >
-                    Register
-                  </button>
-                </span>
-              ) : (
-                <span>
-                  Already have an account?{" "}
-                  <button
-                    onClick={() => setAuthMode("login")}
-                    className="text-brand-red hover:underline font-bold"
-                  >
-                    Sign In
-                  </button>
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
@@ -402,6 +348,7 @@ export const Header: React.FC = () => {
               {link.label}
             </Link>
           ))}
+
           {isAdmin && (
             <Link
               href="/admin"
@@ -412,8 +359,248 @@ export const Header: React.FC = () => {
               Admin Panel
             </Link>
           )}
+
+          {!currentUser && (
+            <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setAuthMode("login");
+                  setAuthError(null);
+                  setShowAuthModal(true);
+                }}
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-brand-red hover:bg-brand-redDark text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-colors shadow-sm cursor-pointer"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Sign In / Register</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
+
+      {/* Auth Modal (Sign In / Register) - Rendered into body via Portal for 100% Centered Alignment */}
+      {mounted &&
+        showAuthModal &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 bg-black/75 backdrop-blur-md overflow-y-auto animate-fade-in"
+            onClick={() => {
+              setShowAuthModal(false);
+              setAuthError(null);
+            }}
+            role="dialog"
+            aria-modal="true"
+          >
+            {/* Modal Card */}
+            <div
+              className="relative w-full max-w-md mx-auto my-auto bg-white dark:bg-[#111111] border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-2xl text-zinc-900 dark:text-white transition-all transform animate-scale-up"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => {
+                  setShowAuthModal(false);
+                  setAuthError(null);
+                }}
+                className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-full text-zinc-400 hover:text-zinc-700 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {/* Header with Brand Accent */}
+              <div className="text-center space-y-2 mb-6">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-red/10 border border-brand-red/20 text-brand-red text-[10px] font-black uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-brand-red animate-pulse" />
+                  FACTS THAT HIT.
+                </div>
+                <h2 className="text-2xl font-black font-headline tracking-tight text-zinc-900 dark:text-white">
+                  {authMode === "login" ? "Welcome Back" : "Join HITFACT"}
+                </h2>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-xs mx-auto leading-relaxed">
+                  {authMode === "login"
+                    ? "Sign in to access verified investigations, saved stories, and reader discussions."
+                    : "Create a free account to engage with independent, evidence-driven journalism."}
+                </p>
+              </div>
+
+              {/* Mode Toggle (Tabs) */}
+              <div className="grid grid-cols-2 p-1 mb-5 bg-zinc-100 dark:bg-zinc-900/90 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode("login");
+                    setAuthError(null);
+                  }}
+                  className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    authMode === "login"
+                      ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-xs font-extrabold"
+                      : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                  }`}
+                >
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode("register");
+                    setAuthError(null);
+                  }}
+                  className={`py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    authMode === "register"
+                      ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-xs font-extrabold"
+                      : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                  }`}
+                >
+                  Create Account
+                </button>
+              </div>
+
+              {/* Error Alert Box */}
+              {authError && (
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-900/50 rounded-xl text-xs text-red-700 dark:text-red-400 flex items-start gap-2 animate-shake">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span className="leading-relaxed font-medium">{authError}</span>
+                </div>
+              )}
+
+              {/* Form */}
+              <form onSubmit={handleAuthSubmit} className="space-y-3.5">
+                {authMode === "register" && (
+                  <>
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
+                        Full Name
+                      </label>
+                      <div className="relative">
+                        <User className="w-4 h-4 text-zinc-400 absolute left-3 top-3" />
+                        <input
+                          type="text"
+                          required
+                          placeholder="Your full name"
+                          value={nameInput}
+                          onChange={(e) => setNameInput(e.target.value)}
+                          className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl py-2.5 pl-9 pr-3 text-xs sm:text-sm text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand-red/40 focus:border-brand-red transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
+                        Username
+                      </label>
+                      <div className="relative">
+                        <AtSign className="w-4 h-4 text-zinc-400 absolute left-3 top-3" />
+                        <input
+                          type="text"
+                          required
+                          placeholder="choose_username"
+                          value={usernameInput}
+                          onChange={(e) => setUsernameInput(e.target.value)}
+                          className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl py-2.5 pl-9 pr-3 text-xs sm:text-sm text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand-red/40 focus:border-brand-red transition-all"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-zinc-400 absolute left-3 top-3" />
+                    <input
+                      type="email"
+                      required
+                      placeholder="name@example.com"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl py-2.5 pl-9 pr-3 text-xs sm:text-sm text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand-red/40 focus:border-brand-red transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-zinc-400 absolute left-3 top-3" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={passwordInput}
+                      onChange={(e) => setPasswordInput(e.target.value)}
+                      className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl py-2.5 pl-9 pr-10 text-xs sm:text-sm text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-brand-red/40 focus:border-brand-red transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-2.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 p-1"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-3 px-4 mt-2 bg-gradient-to-r from-brand-red to-red-600 hover:from-red-600 hover:to-brand-red text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Verifying...</span>
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="w-4 h-4" />
+                      <span>{authMode === "login" ? "Sign In to Account" : "Create My Account"}</span>
+                    </>
+                  )}
+                </button>
+              </form>
+
+              {/* Footer Switch */}
+              <div className="mt-5 pt-4 border-t border-zinc-100 dark:border-zinc-800/80 text-center text-xs text-zinc-500">
+                {authMode === "login" ? (
+                  <span>
+                    Don&apos;t have an account yet?{" "}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode("register");
+                        setAuthError(null);
+                      }}
+                      className="text-brand-red hover:underline font-bold ml-1 cursor-pointer"
+                    >
+                      Create one now
+                    </button>
+                  </span>
+                ) : (
+                  <span>
+                    Already registered?{" "}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode("login");
+                        setAuthError(null);
+                      }}
+                      className="text-brand-red hover:underline font-bold ml-1 cursor-pointer"
+                    >
+                      Sign In here
+                    </button>
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </header>
   );
 };
