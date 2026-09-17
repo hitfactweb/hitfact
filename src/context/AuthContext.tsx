@@ -41,10 +41,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = (email: string): boolean => {
+  const login = (email: string, pass?: string): boolean => {
     const cleanEmail = email.trim().toLowerCase();
+    const cleanPass = pass?.trim() || "";
 
     if (cleanEmail === "admin@hitfact.com" || cleanEmail === "admin") {
+      if (cleanPass !== "admin123" && cleanPass !== "hitfact2026") {
+        return false;
+      }
       const adminUser: CurrentUser = {
         id: "usr_admin",
         name: "Chief Editor (Admin)",
