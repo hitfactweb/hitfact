@@ -19,6 +19,8 @@ import {
   Lock,
   LogIn,
   AlertCircle,
+  ShieldAlert,
+  Loader2,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -28,14 +30,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
-  const [loginError, setLoginError] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAdminLogin = (e: React.FormEvent) => {
+  const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoginError(false);
-    const success = login(emailInput.trim(), passwordInput);
-    if (!success) {
-      setLoginError(true);
+    setLoginError(null);
+    setIsSubmitting(true);
+    try {
+      const res = await login(emailInput.trim(), passwordInput);
+      if (!res.success) {
+        setLoginError(res.error || "Invalid editorial credentials. Please verify your staff email.");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -57,9 +65,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           {loginError && (
-            <div className="p-3 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-900/50 rounded-lg text-xs text-red-700 dark:text-red-400 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>Invalid editorial credentials. Please verify your staff email.</span>
+            <div className="p-3 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-900/50 rounded-lg text-xs text-red-700 dark:text-red-400 flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{loginError}</span>
             </div>
           )}
 
@@ -93,10 +101,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             <button
               type="submit"
-              className="w-full py-2.5 bg-brand-red hover:bg-brand-redDark text-white font-bold rounded-lg text-xs uppercase tracking-wider transition-colors shadow-md flex items-center justify-center gap-2"
+              disabled={isSubmitting}
+              className="w-full py-2.5 bg-brand-red hover:bg-brand-redDark disabled:opacity-50 text-white font-bold rounded-lg text-xs uppercase tracking-wider transition-colors shadow-md flex items-center justify-center gap-2"
             >
-              <LogIn className="w-4 h-4" />
-              <span>Sign In to Editorial CMS</span>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Authenticating...</span>
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-4 h-4" />
+                  <span>Sign In to Editorial CMS</span>
+                </>
+              )}
             </button>
           </form>
 
@@ -122,6 +140,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/forms", label: "Form Responses", icon: <FormInput className="w-4 h-4" /> },
     { href: "/admin/moderation", label: "Moderation Queue", icon: <MessageSquare className="w-4 h-4" /> },
     { href: "/admin/media", label: "Media Library", icon: <ImageIcon className="w-4 h-4" /> },
+    { href: "/admin/security", label: "Security & Access Logs", icon: <ShieldAlert className="w-4 h-4 text-emerald-500" /> },
     { href: "/admin/settings", label: "Platform Settings", icon: <Settings className="w-4 h-4" /> },
   ];
 

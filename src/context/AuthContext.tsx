@@ -13,7 +13,7 @@ export interface CurrentUser {
 
 interface AuthContextType {
   currentUser: CurrentUser | null;
-  login: (email: string, pass?: string) => boolean;
+  login: (email: string, pass?: string) => Promise<{ success: boolean; error?: string }>;
   register: (name: string, email: string, username: string) => boolean;
   logout: () => void;
   isAdmin: boolean;
@@ -21,7 +21,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({
   currentUser: null,
-  login: () => false,
+  login: async () => ({ success: false }),
   register: () => false,
   logout: () => {},
   isAdmin: false,
@@ -41,25 +41,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = (email: string, pass?: string): boolean => {
+  const login = async (
+    email: string,
+    pass?: string
+  ): Promise<{ success: boolean; error?: string }> => {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPass = pass?.trim() || "";
 
     if (cleanEmail === "admin@hitfact.com" || cleanEmail === "admin") {
-      if (cleanPass !== "admin123" && cleanPass !== "hitfact2026") {
-        return false;
+      try {
+        const res = await fetch("/api/v1/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: cleanEmail, password: cleanPass }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          return {
+            success: false,
+            error: data.error || "Authentication failed. Invalid staff credentials.",
+          };
+        }
+
+        const adminUser: CurrentUser = data.user || {
+          id: "usr_admin",
+          name: "Chief Editor (Admin)",
+          email: "admin@hitfact.com",
+          role: "SUPER_ADMIN",
+          username: "admin",
+          avatar:
+            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+        };
+        setCurrentUser(adminUser);
+        localStorage.setItem("hitfact_auth_user", JSON.stringify(adminUser));
+        return { success: true };
+      } catch {
+        return {
+          success: false,
+          error: "Connection error: Unable to contact secure authentication server.",
+        };
       }
-      const adminUser: CurrentUser = {
-        id: "usr_admin",
-        name: "Chief Editor (Admin)",
-        email: "admin@hitfact.com",
-        role: "SUPER_ADMIN",
-        username: "admin",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      };
-      setCurrentUser(adminUser);
-      localStorage.setItem("hitfact_auth_user", JSON.stringify(adminUser));
-      return true;
     }
 
     // Standard user login
@@ -69,11 +91,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email: cleanEmail,
       role: "USER",
       username: cleanEmail.split("@")[0],
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+      avatar:
+        "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
     };
     setCurrentUser(user);
     localStorage.setItem("hitfact_auth_user", JSON.stringify(user));
-    return true;
+    return { success: true };
   };
 
   const register = (name: string, email: string, username: string): boolean => {

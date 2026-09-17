@@ -49,14 +49,16 @@ export const Header: React.FC = () => {
     }
   };
 
-  const handleAuthSubmit = (e: React.FormEvent) => {
+  const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (authMode === "login") {
       if (emailInput.trim()) {
-        login(emailInput.trim(), passwordInput);
-        setShowAuthModal(false);
-        setEmailInput("");
-        setPasswordInput("");
+        const res = await login(emailInput.trim(), passwordInput);
+        if (res.success) {
+          setShowAuthModal(false);
+          setEmailInput("");
+          setPasswordInput("");
+        }
       }
     } else {
       if (nameInput.trim() && emailInput.trim() && usernameInput.trim()) {
@@ -327,11 +329,6 @@ export const Header: React.FC = () => {
                   onChange={(e) => setEmailInput(e.target.value)}
                   className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-900 dark:text-white focus:border-brand-red focus:outline-none"
                 />
-                {authMode === "login" && (
-                  <span className="text-[10px] text-zinc-500 block mt-1">
-                    For Admin access, use: <strong className="text-brand-red">admin@hitfact.com</strong>
-                  </span>
-                )}
               </div>
 
               <div>
