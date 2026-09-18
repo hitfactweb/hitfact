@@ -49,6 +49,47 @@ export default function NewQuizPage() {
     },
   ]);
 
+  const isMalayalam = /[\u0D00-\u0D7F]/.test(
+    title + description + questions.map((q) => q.question + q.explanation + q.options.map((o) => o.label).join("")).join("")
+  );
+
+  const loadMalayalamQuizPreset = () => {
+    setTitle("മാധ്യമ സാക്ഷരത ചലഞ്ച്: വ്യാജവാർത്തകളും ഡിജിറ്റൽ കൃത്രിമങ്ങളും തിരിച്ചറിയാം");
+    setDescription("സോഷ്യൽ മീഡിയയിലെ വ്യാജ പ്രചാരണങ്ങൾ, തെറ്റിദ്ധരിപ്പിക്കുന്ന വീഡിയോകൾ, എഐ ഡീപ്ഫേക്കുകൾ എന്നിവ തിരിച്ചറിയാനുള്ള ഫോറൻസിക് ചലഞ്ച്.");
+    setPassMark(70);
+    setTimeLimitMinutes("5");
+    setQuestions([
+      {
+        question: "സോഷ്യൽ മീഡിയയിൽ ഒരു നേതാവിന്റെ പ്രകോപനപരമായ പ്രസംഗത്തിന്റെ ചെറിയ വീഡിയോ ക്ലിപ്പ് കാണുമ്പോൾ നിങ്ങളുടെ ആദ്യത്തെ പരിശോധനാ നടപടി എന്തായിരിക്കണം?",
+        explanation: "പ്രസംഗങ്ങളിൽ നിന്നുള്ള ചില വാക്യങ്ങൾ മാത്രം വെട്ടിമാറ്റി തെറ്റിദ്ധാരണ പരത്തുന്ന രീതി സാധാരണയാണ്. അതിനാൽ മുഴുവൻ പ്രസംഗത്തിന്റെ വീഡിയോ കണ്ടെത്തി സന്ദർഭം മനസ്സിലാക്കുകയാണ് പ്രാഥമിക പടി.",
+        options: [
+          { label: "മുഴുവൻ പ്രസംഗത്തിന്റെ വീഡിയോ (Full Video) പരിശോധിച്ച് യഥാർത്ഥ സന്ദർഭം മനസ്സിലാക്കുക", isCorrect: true },
+          { label: "വീഡിയോ ഉടൻ തന്നെ വാട്സ്ആപ്പ് ഗ്രൂപ്പുകളിലേക്ക് ഫോർവേഡ് ചെയ്യുക", isCorrect: false },
+          { label: "കൂടുതൽ ലൈക്കുകളും ഷെയറുകളും ഉള്ളതിനാൽ സത്യമാണെന്ന് വിശ്വസിക്കുക", isCorrect: false },
+          { label: "കമന്റുകളിലെ അഭിപ്രായങ്ങൾ നോക്കി സത്യമാണോ എന്ന് തീരുമാനിക്കുക", isCorrect: false },
+        ],
+      },
+      {
+        question: "എഐ സാങ്കേതികവിദ്യ (AI Deepfake) ഉപയോഗിച്ച് നിർമ്മിച്ച വ്യാജ ചിത്രങ്ങൾ തിരിച്ചറിയാനുള്ള പ്രധാന അടയാളം എന്താണ്?",
+        explanation: "ജനറേറ്റീവ് എഐ നിർമ്മിക്കുന്ന ചിത്രങ്ങളിൽ പലപ്പോഴും വിരലുകളിലെ അപാകതകൾ, കൃത്രിമമായ ലൈറ്റിംഗ്, പശ്ചാത്തലത്തിലെ വളഞ്ഞ വരകൾ, ചെവിയിലെ ആഭരണങ്ങളുടെ പൊരുത്തക്കേടുകൾ എന്നിവ കാണാം.",
+        options: [
+          { label: "കണ്ണുകളിലെ കൃത്രിമ പ്രതിഫലനം, വിരലുകളുടെ ഘടനയിലെ വ്യത്യാസം, പശ്ചാത്തലത്തിലെ വളഞ്ഞ വരകൾ", isCorrect: true },
+          { label: "ചിത്രം ഉയർന്ന ഗുണമേന്മയുള്ള (HD) ആയതുകൊണ്ട്", isCorrect: false },
+          { label: "ചിത്രത്തിലുള്ള വ്യക്തി ഔദ്യോഗിക വസ്ത്രം ധരിച്ചിരിക്കുന്നതുകൊണ്ട്", isCorrect: false },
+        ],
+      },
+      {
+        question: "ഒരു ഓൺലൈൻ വാർത്തയുടെ ആധികാരികത പരിശോധിക്കുമ്പോൾ ശ്രദ്ധിക്കേണ്ട പ്രധാന കാര്യം എന്താണ്?",
+        explanation: "വാർത്ത പ്രസിദ്ധീകരിച്ച മാധ്യമ സ്ഥാപനത്തിന്റെ വിശ്വാസ്യത, ഔദ്യോഗിക സ്രോതസ്സുകൾ (Official Sources), വാർത്ത എഴുതിയ വ്യക്തിയുടെ വിവരങ്ങൾ എന്നിവ പരിശോധിക്കേണ്ടതാണ്.",
+        options: [
+          { label: "ഔദ്യോഗിക സ്ഥിരീകരണവും (Official Sources) വിശ്വസനീയമായ മാധ്യമ റിപ്പോർട്ടുകളും ഉണ്ടോ എന്ന് പരിശോധിക്കുക", isCorrect: true },
+          { label: "വാർത്തയുടെ തലക്കെട്ട് എത്രത്തോളം ആകർഷകമാണെന്ന് നോക്കുക", isCorrect: false },
+          { label: "ഏതെങ്കിലും അജ്ഞാത ബ്ലോഗിൽ പ്രസിദ്ധീകരിച്ചിട്ടുണ്ടെങ്കിൽ വിശ്വസിക്കുക", isCorrect: false },
+        ],
+      },
+    ]);
+  };
+
   // Question manipulation
   const handleAddQuestion = () => {
     setQuestions((prev) => [
@@ -203,18 +244,36 @@ export default function NewQuizPage() {
         >
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Quizzes
         </Link>
-        <span className="text-xs font-mono uppercase text-purple-600 dark:text-purple-400 font-bold flex items-center gap-1.5">
-          <HelpCircle className="w-4 h-4" /> New Media Literacy Challenge
-        </span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={loadMalayalamQuizPreset}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 text-xs font-bold text-purple-700 dark:text-purple-300 hover:bg-purple-100 transition-colors shadow-xs"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+            <span>മലയാളം മാതൃക (Malayalam Quiz Preset)</span>
+          </button>
+          <span className="text-xs font-mono uppercase text-purple-600 dark:text-purple-400 font-bold flex items-center gap-1.5">
+            <HelpCircle className="w-4 h-4" /> New Media Literacy Challenge
+          </span>
+        </div>
       </div>
 
-      <div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-zinc-900 dark:text-white font-headline">
-          CREATE MEDIA LITERACY QUIZ
-        </h1>
-        <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-          Build interactive scenario exercises with real-world verification forensic breakdowns.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-zinc-900 dark:text-white font-headline">
+            CREATE MEDIA LITERACY QUIZ
+          </h1>
+          <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+            Build interactive scenario exercises with real-world verification forensic breakdowns.
+          </p>
+        </div>
+        {isMalayalam && (
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold shrink-0">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>Anek Malayalam Font Active</span>
+          </div>
+        )}
       </div>
 
       {errorMsg && (
@@ -236,8 +295,10 @@ export default function NewQuizPage() {
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Identifying AI Voice Clones & Synthetic Leaks"
-              className="w-full text-sm font-semibold bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg px-3.5 py-2.5 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500"
+              placeholder="e.g. മാധ്യമ സാക്ഷരത ചലഞ്ച് / Identifying AI Voice Clones"
+              className={`w-full text-sm font-semibold bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg px-3.5 py-2.5 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 ${
+                isMalayalam || /[\u0D00-\u0D7F]/.test(title) ? "font-malayalam leading-relaxed text-base" : ""
+              }`}
             />
           </div>
 
@@ -251,7 +312,9 @@ export default function NewQuizPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Explain what forensic skills citizens will learn through this challenge..."
-              className="w-full text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500"
+              className={`w-full text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 ${
+                isMalayalam || /[\u0D00-\u0D7F]/.test(description) ? "font-malayalam leading-relaxed" : ""
+              }`}
             />
           </div>
 
@@ -348,7 +411,9 @@ export default function NewQuizPage() {
                   value={q.question}
                   onChange={(e) => handleQuestionChange(qIdx, "question", e.target.value)}
                   placeholder="e.g. A viral clip shows a candidate making a shocking statement. The lip movements don't match the audio rhythm. What should be your first forensic step?"
-                  className="w-full text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  className={`w-full text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                    isMalayalam || /[\u0D00-\u0D7F]/.test(q.question) ? "font-malayalam leading-relaxed text-sm" : ""
+                  }`}
                 />
               </div>
 
@@ -364,7 +429,9 @@ export default function NewQuizPage() {
                   value={q.explanation}
                   onChange={(e) => handleQuestionChange(qIdx, "explanation", e.target.value)}
                   placeholder="Explain why the correct answer is factually correct, citing forensic verification methods..."
-                  className="w-full text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-950 border border-purple-200 dark:border-purple-900/50 rounded-lg p-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  className={`w-full text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-950 border border-purple-200 dark:border-purple-900/50 rounded-lg p-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-purple-500 ${
+                    isMalayalam || /[\u0D00-\u0D7F]/.test(q.explanation) ? "font-malayalam leading-relaxed" : ""
+                  }`}
                 />
               </div>
 
@@ -406,7 +473,9 @@ export default function NewQuizPage() {
                         value={opt.label}
                         onChange={(e) => handleOptionLabelChange(qIdx, optIdx, e.target.value)}
                         placeholder={`Choice ${optIdx + 1}`}
-                        className="flex-1 text-xs sm:text-sm bg-transparent border-none px-2 py-1 text-zinc-900 dark:text-white focus:outline-none"
+                        className={`flex-1 text-xs sm:text-sm bg-transparent border-none px-2 py-1 text-zinc-900 dark:text-white focus:outline-none ${
+                          isMalayalam || /[\u0D00-\u0D7F]/.test(opt.label) ? "font-malayalam leading-relaxed" : ""
+                        }`}
                       />
 
                       {opt.isCorrect && (

@@ -13,6 +13,8 @@ import {
   Send,
   Eye,
   AlertCircle,
+  Sparkles,
+  CheckCircle2,
 } from "lucide-react";
 
 export default function NewPollPage() {
@@ -26,6 +28,20 @@ export default function NewPollPage() {
   const [endsAt, setEndsAt] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const isMalayalam = /[\u0D00-\u0D7F]/.test(
+    question + description + options.join("")
+  );
+
+  const loadMalayalamPreset = () => {
+    setQuestion("സോഷ്യൽ മീഡിയയിലെ വ്യാജവാർത്തകൾ തടയാൻ കർശനമായ ഫാക്ട്-ചെക്കിംഗ് നിയമങ്ങൾ വേണമോ?");
+    setDescription("ഡിജിറ്റൽ മാധ്യമങ്ങളിലെ വ്യാജ പ്രചാരണങ്ങളും ഡീപ്ഫേക്കുകളും തടയുന്നതിനുള്ള ജനകീയ അഭിപ്രായ സർവേ.");
+    setOptions([
+      "അതെ – കർശനമായ ഫാക്ട്-ചെക്കിംഗും ലേബലിംഗും നിർബന്ധമാക്കണം",
+      "മാധ്യമങ്ങൾക്ക് സ്വയം നിയന്ത്രണം ഏർപ്പെടുത്തിയാൽ മതി",
+      "നിയമങ്ങൾ മാധ്യമ സ്വാതന്ത്ര്യത്തെ തടസ്സപ്പെടുത്താൻ സാധ്യതയുണ്ട്",
+    ]);
+  };
 
   const handleAddOption = () => {
     setOptions((prev) => [...prev, ""]);
@@ -98,18 +114,36 @@ export default function NewPollPage() {
         >
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Polls
         </Link>
-        <span className="text-xs font-mono uppercase text-blue-600 dark:text-blue-400 font-bold flex items-center gap-1.5">
-          <CheckSquare className="w-4 h-4" /> New Public Poll
-        </span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={loadMalayalamPreset}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-xs font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-100 transition-colors shadow-xs"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+            <span>മലയാളം മാതൃക (Malayalam Preset)</span>
+          </button>
+          <span className="text-xs font-mono uppercase text-blue-600 dark:text-blue-400 font-bold flex items-center gap-1.5">
+            <CheckSquare className="w-4 h-4" /> New Public Poll
+          </span>
+        </div>
       </div>
 
-      <div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-zinc-900 dark:text-white font-headline">
-          CREATE CIVIC OPINION POLL
-        </h1>
-        <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-          Publish a public opinion question to gather civic feedback with verified ballot counting.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-zinc-900 dark:text-white font-headline">
+            CREATE CIVIC OPINION POLL
+          </h1>
+          <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+            Publish a public opinion question to gather civic feedback with verified ballot counting.
+          </p>
+        </div>
+        {isMalayalam && (
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold shrink-0">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>Anek Malayalam Font Active</span>
+          </div>
+        )}
       </div>
 
       {errorMsg && (
@@ -132,8 +166,10 @@ export default function NewPollPage() {
               required
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              placeholder="e.g. Should social media platforms be legally required to disclose bot engagement?"
-              className="w-full text-sm font-semibold bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg px-3.5 py-2.5 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-red/50 focus:border-brand-red"
+              placeholder="e.g. സോഷ്യൽ മീഡിയയിലെ വ്യാജവാർത്തകൾ തടയാൻ കർശന നിയമങ്ങൾ വേണമോ? / Should platforms be regulated?"
+              className={`w-full text-sm font-semibold bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg px-3.5 py-2.5 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-red/50 focus:border-brand-red ${
+                isMalayalam || /[\u0D00-\u0D7F]/.test(question) ? "font-malayalam leading-relaxed text-base" : ""
+              }`}
             />
           </div>
 
@@ -147,7 +183,9 @@ export default function NewPollPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Provide context or background details regarding this civic topic..."
-              className="w-full text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-red/50 focus:border-brand-red"
+              className={`w-full text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg p-3 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-brand-red/50 focus:border-brand-red ${
+                isMalayalam || /[\u0D00-\u0D7F]/.test(description) ? "font-malayalam leading-relaxed" : ""
+              }`}
             />
           </div>
 
@@ -171,8 +209,10 @@ export default function NewPollPage() {
                     required
                     value={opt}
                     onChange={(e) => handleOptionChange(idx, e.target.value)}
-                    placeholder={`Option ${idx + 1} (e.g. Strongly Agree / Yes / Regulate)`}
-                    className="flex-1 text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg px-3 py-2 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-brand-red"
+                    placeholder={`Option ${idx + 1}`}
+                    className={`flex-1 text-xs sm:text-sm bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg px-3 py-2 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-brand-red ${
+                      isMalayalam || /[\u0D00-\u0D7F]/.test(opt) ? "font-malayalam leading-relaxed" : ""
+                    }`}
                   />
                   <button
                     type="button"
@@ -246,22 +286,39 @@ export default function NewPollPage() {
           <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-zinc-500">
             <Eye className="w-3.5 h-3.5" /> Citizen UI Preview
           </div>
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 space-y-3 shadow-xs">
-            <div className="flex items-center gap-2 text-[10px] font-bold uppercase text-blue-600 dark:text-blue-400">
-              <CheckSquare className="w-3.5 h-3.5" />
-              <span>HITFACT Civic Pulse</span>
+          <div className={`bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 space-y-3 shadow-xs ${
+            isMalayalam ? "font-malayalam" : ""
+          }`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-[10px] font-bold uppercase text-blue-600 dark:text-blue-400">
+                <CheckSquare className="w-3.5 h-3.5" />
+                <span>{isMalayalam ? "സിവിക് ഒപ്പീനിയൻ പോൾ" : "HITFACT Civic Pulse"}</span>
+              </div>
+              {isMalayalam && (
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 font-sans">
+                  Anek Malayalam
+                </span>
+              )}
             </div>
-            <h3 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-white">
+            <h3 className={`text-sm sm:text-base font-bold text-zinc-900 dark:text-white ${
+              isMalayalam ? "font-malayalam leading-relaxed text-base" : ""
+            }`}>
               {question.trim() || "Your poll question will appear here..."}
             </h3>
             {description.trim() && (
-              <p className="text-xs text-zinc-600 dark:text-zinc-400">{description.trim()}</p>
+              <p className={`text-xs text-zinc-600 dark:text-zinc-400 ${
+                isMalayalam ? "font-malayalam leading-relaxed" : ""
+              }`}>
+                {description.trim()}
+              </p>
             )}
             <div className="space-y-2 pt-1">
               {options.filter(Boolean).map((opt, i) => (
                 <div
                   key={i}
-                  className="p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs font-medium text-zinc-700 dark:text-zinc-300 flex items-center justify-between"
+                  className={`p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs font-medium text-zinc-700 dark:text-zinc-300 flex items-center justify-between ${
+                    isMalayalam || /[\u0D00-\u0D7F]/.test(opt) ? "font-malayalam leading-relaxed" : ""
+                  }`}
                 >
                   <span>{opt}</span>
                   <span className="text-[11px] text-zinc-400 font-mono">0%</span>

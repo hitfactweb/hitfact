@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Inter, Space_Grotesk, Anek_Malayalam } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
@@ -19,6 +19,13 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
+const anekMalayalam = Anek_Malayalam({
+  subsets: ["malayalam", "latin"],
+  variable: "--font-anek-malayalam",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700", "800"],
+});
+
 export const metadata: Metadata = {
   title: "HITFACT — Facts That Hit | Politics • Media • Reality",
   description:
@@ -34,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
+    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} ${anekMalayalam.variable}`}>
       <head>
         <script
           dangerouslySetInnerHTML={{

@@ -195,14 +195,14 @@ export const Sidebar: React.FC = () => {
             </span>
           </div>
           <div>
-            <h4 className="text-xs font-bold text-white line-clamp-2">{activeQuiz.title}</h4>
-            <p className="text-[11px] text-zinc-400 line-clamp-2 mt-1">{activeQuiz.description}</p>
+            <h4 className={`text-xs font-bold text-white line-clamp-2 ${/[\u0D00-\u0D7F]/.test(activeQuiz.title) ? "font-malayalam text-sm" : ""}`}>{activeQuiz.title}</h4>
+            <p className={`text-[11px] text-zinc-400 line-clamp-2 mt-1 ${/[\u0D00-\u0D7F]/.test(activeQuiz.description) ? "font-malayalam leading-relaxed" : ""}`}>{activeQuiz.description}</p>
           </div>
           <Link
             href={`/quizzes?quizId=${activeQuiz.id}`}
             className="flex items-center justify-center gap-1.5 w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
           >
-            <span>Take Challenge</span>
+            <span>{/[\u0D00-\u0D7F]/.test(activeQuiz.title) ? "ചലഞ്ചിൽ പങ്കെടുക്കുക" : "Take Challenge"}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>

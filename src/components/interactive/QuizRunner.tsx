@@ -76,17 +76,37 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({ quiz }) => {
   const scorePercent = Math.round((totalScore / quiz.questions.length) * 100);
   const passed = scorePercent >= quiz.passMark;
 
+  const isMalayalam = /[\u0D00-\u0D7F]/.test(
+    quiz.title + quiz.description + (currentQuestion?.question || "")
+  );
+
   return (
-    <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-brand-border rounded-2xl p-6 sm:p-8 shadow-xs dark:shadow-2xl space-y-6 transition-colors">
+    <div className={`bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-brand-border rounded-2xl p-6 sm:p-8 shadow-xs dark:shadow-2xl space-y-6 transition-colors ${
+      isMalayalam ? "font-malayalam" : ""
+    }`}>
       {/* Quiz Progress Bar */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
           <span className="font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
-            <HelpCircle className="w-4 h-4" /> Media Literacy Challenge
+            <HelpCircle className="w-4 h-4 shrink-0" />
+            <span>{isMalayalam ? "മാധ്യമ സാക്ഷരത ചലഞ്ച്" : "Media Literacy Challenge"}</span>
           </span>
-          <span>
-            {isFinished ? "Completed" : `Question ${currentIndex + 1} of ${quiz.questions.length}`}
-          </span>
+          <div className="flex items-center gap-2">
+            {isMalayalam && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 font-sans">
+                Anek Malayalam
+              </span>
+            )}
+            <span>
+              {isFinished
+                ? isMalayalam
+                  ? "പൂർത്തിയായി"
+                  : "Completed"
+                : isMalayalam
+                ? `ചോദ്യം ${currentIndex + 1} / ${quiz.questions.length}`
+                : `Question ${currentIndex + 1} of ${quiz.questions.length}`}
+            </span>
+          </div>
         </div>
         <div className="w-full h-2 bg-zinc-100 dark:bg-zinc-950 rounded-full overflow-hidden border border-zinc-200 dark:border-zinc-800">
           <div
@@ -99,7 +119,9 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({ quiz }) => {
       {!isFinished ? (
         /* Active Question UI */
         <div className="space-y-6">
-          <h3 className="text-base sm:text-xl font-bold text-zinc-900 dark:text-white leading-relaxed">
+          <h3 className={`text-base sm:text-xl font-bold text-zinc-900 dark:text-white ${
+            isMalayalam ? "font-malayalam leading-relaxed" : "leading-relaxed"
+          }`}>
             {currentQuestion.question}
           </h3>
 
@@ -107,6 +129,7 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({ quiz }) => {
           <div className="space-y-3">
             {currentQuestion.options.map((opt) => {
               const isSelected = selectedOptionId === opt.id;
+              const optIsMalayalam = isMalayalam || /[\u0D00-\u0D7F]/.test(opt.label);
               let optionStyle =
                 "bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800/40";
 
@@ -129,9 +152,11 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({ quiz }) => {
                   key={opt.id}
                   disabled={isAnswerRevealed}
                   onClick={() => handleSelectOption(opt.id)}
-                  className={`w-full text-left p-4 rounded-xl border text-xs sm:text-sm flex items-center justify-between gap-3 transition-all ${optionStyle}`}
+                  className={`w-full text-left p-4 rounded-xl border text-xs sm:text-sm flex items-center justify-between gap-3 transition-all ${optionStyle} ${
+                    optIsMalayalam ? "font-malayalam leading-relaxed" : ""
+                  }`}
                 >
-                  <span className="flex-1">{opt.label}</span>
+                  <span className={`flex-1 ${optIsMalayalam ? "font-malayalam" : ""}`}>{opt.label}</span>
                   {isAnswerRevealed && opt.isCorrect && (
                     <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   )}
@@ -147,9 +172,13 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({ quiz }) => {
           {isAnswerRevealed && (
             <div className="p-4 bg-purple-50/60 dark:bg-zinc-950 border border-purple-200/80 dark:border-zinc-800 rounded-xl space-y-1.5 animate-slide-up">
               <span className="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400 block">
-                Forensic Explanation
+                {isMalayalam ? "ഫോറൻസിക് വിശദീകരണം (Forensic Explanation)" : "Forensic Explanation"}
               </span>
-              <p className="text-xs text-zinc-800 dark:text-zinc-300 leading-relaxed">{currentQuestion.explanation}</p>
+              <p className={`text-xs text-zinc-800 dark:text-zinc-300 leading-relaxed ${
+                isMalayalam || /[\u0D00-\u0D7F]/.test(currentQuestion.explanation) ? "font-malayalam" : ""
+              }`}>
+                {currentQuestion.explanation}
+              </p>
             </div>
           )}
 
@@ -161,14 +190,22 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({ quiz }) => {
                 onClick={handleConfirmAnswer}
                 className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-colors shadow-md"
               >
-                Submit Answer
+                {isMalayalam ? "ഉത്തരം സ്ഥിരീകരിക്കുക" : "Submit Answer"}
               </button>
             ) : (
               <button
                 onClick={handleNextQuestion}
                 className="px-6 py-2.5 bg-brand-red hover:bg-brand-redDark text-white rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-colors shadow-md"
               >
-                <span>{currentIndex < quiz.questions.length - 1 ? "Next Scenario" : "View Results"}</span>
+                <span>
+                  {isMalayalam
+                    ? currentIndex < quiz.questions.length - 1
+                      ? "അടുത്ത ചോദ്യം"
+                      : "ഫലം കാണുക"
+                    : currentIndex < quiz.questions.length - 1
+                    ? "Next Scenario"
+                    : "View Results"}
+                </span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             )}
@@ -182,9 +219,13 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({ quiz }) => {
           </div>
 
           <div className="space-y-2">
-            <h3 className="text-2xl font-bold text-zinc-900 dark:text-white">Assessment Complete!</h3>
+            <h3 className="text-2xl font-bold text-zinc-900 dark:text-white">
+              {isMalayalam ? "മൂല്യനിർണ്ണയം പൂർത്തിയായി!" : "Assessment Complete!"}
+            </h3>
             <p className="text-xs text-zinc-600 dark:text-zinc-400">
-              You correctly solved {totalScore} out of {quiz.questions.length} scenarios.
+              {isMalayalam
+                ? `${quiz.questions.length} ചോദ്യങ്ങളിൽ ${totalScore} എണ്ണത്തിന് ശരിയായ ഉത്തരം നൽകി.`
+                : `You correctly solved ${totalScore} out of ${quiz.questions.length} scenarios.`}
             </p>
           </div>
 
@@ -197,7 +238,13 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({ quiz }) => {
                   : "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-400"
               }`}
             >
-              {passed ? "Media Literacy Verified" : "Needs Review"}
+              {isMalayalam
+                ? passed
+                  ? "മാധ്യമ സാക്ഷരത സാക്ഷ്യപ്പെടുത്തി"
+                  : "കൂടുതൽ അവലോകനം ആവശ്യമാണ്"
+                : passed
+                ? "Media Literacy Verified"
+                : "Needs Review"}
             </span>
           </div>
 
@@ -207,7 +254,7 @@ export const QuizRunner: React.FC<QuizRunnerProps> = ({ quiz }) => {
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-zinc-900 dark:bg-zinc-800 hover:bg-zinc-800 dark:hover:bg-zinc-700 text-white text-xs font-bold transition-colors"
             >
               <RotateCcw className="w-4 h-4" />
-              <span>Retake Challenge</span>
+              <span>{isMalayalam ? "വീണ്ടും പങ്കെടുക്കുക" : "Retake Challenge"}</span>
             </button>
           </div>
         </div>

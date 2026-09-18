@@ -227,7 +227,7 @@ Until digital advertising platforms enforce strict provenance checks and demonet
     });
   }
 
-  // 4. Seed Active Civic Polls (if none exist)
+  // 4. Seed Active Civic Polls (if none exist or add Malayalam poll)
   const existingPolls = await prisma.poll.count();
   if (existingPolls === 0) {
     console.log("Creating active civic polls...");
@@ -265,7 +265,30 @@ Until digital advertising platforms enforce strict provenance checks and demonet
     });
   }
 
-  // 5. Seed Media Literacy Quizzes (if none exist)
+  // Ensure Malayalam Civic Poll exists
+  const existingMalayalamPoll = await prisma.poll.findFirst({
+    where: { question: { contains: "സോഷ്യൽ മീഡിയ" } },
+  });
+  if (!existingMalayalamPoll) {
+    console.log("Creating Malayalam Civic Poll...");
+    await prisma.poll.create({
+      data: {
+        question: "സോഷ്യൽ മീഡിയയിൽ പ്രചരിക്കുന്ന വ്യാജവാർത്തകൾ തടയാൻ കർശനമായ ഫാക്ട്-ചെക്കിംഗ് നിയമങ്ങൾ വേണമോ?",
+        description: "ഡിജിറ്റൽ മാധ്യമങ്ങളിലെ വ്യാജ പ്രചാരണങ്ങളും ഡീപ്ഫേക്കുകളും തടയുന്നതിനുള്ള ജനകീയ അഭിപ്രായ സർവേ.",
+        allowMultiple: false,
+        requireLogin: false,
+        options: {
+          create: [
+            { label: "അതെ – കർശനമായ ഫാക്ട്-ചെക്കിംഗും ലേബലിംഗും നിർബന്ധമാക്കണം", sortOrder: 0 },
+            { label: "മാധ്യമങ്ങൾക്ക് സ്വയം നിയന്ത്രണം ഏർപ്പെടുത്തിയാൽ മതി", sortOrder: 1 },
+            { label: "നിയമങ്ങൾ മാധ്യമ സ്വാതന്ത്ര്യത്തെ തടസ്സപ്പെടുത്താൻ സാധ്യതയുണ്ട്", sortOrder: 2 },
+          ],
+        },
+      },
+    });
+  }
+
+  // 5. Seed Media Literacy Quizzes (if none exist or add Malayalam quiz)
   const existingQuizzes = await prisma.quiz.count();
   if (existingQuizzes === 0) {
     console.log("Creating media literacy verification quiz...");
@@ -316,6 +339,67 @@ Until digital advertising platforms enforce strict provenance checks and demonet
                   { label: "Designing agricultural landscape graphics for state news channels", isCorrect: false },
                   { label: "Running official paid billboard campaigns across public highways", isCorrect: false },
                   { label: "Writing satirical political comedy scripts for television", isCorrect: false },
+                ],
+              },
+            },
+          ],
+        },
+      },
+    });
+  }
+
+  // Ensure Malayalam Media Literacy Quiz exists
+  const existingMalayalamQuiz = await prisma.quiz.findFirst({
+    where: { slug: "malayalam-media-literacy-challenge" },
+  });
+  if (!existingMalayalamQuiz) {
+    console.log("Creating Malayalam Media Literacy Quiz...");
+    await prisma.quiz.create({
+      data: {
+        title: "മാധ്യമ സാക്ഷരത ചലഞ്ച്: വ്യാജവാർത്തകളും ഡിജിറ്റൽ കൃത്രിമങ്ങളും തിരിച്ചറിയാം",
+        description: "സോഷ്യൽ മീഡിയയിലെ വ്യാജ പ്രചാരണങ്ങൾ, തെറ്റിദ്ധരിപ്പിക്കുന്ന വീഡിയോകൾ, എഐ ഡീപ്ഫേക്കുകൾ എന്നിവ തിരിച്ചറിയാനുള്ള ഫോറൻസിക് ചലഞ്ച്.",
+        slug: "malayalam-media-literacy-challenge",
+        timeLimit: 300,
+        passMark: 70,
+        published: true,
+        questions: {
+          create: [
+            {
+              question: "സോഷ്യൽ മീഡിയയിൽ ഒരു നേതാവിന്റെ പ്രകോപനപരമായ പ്രസംഗത്തിന്റെ ചെറിയ വീഡിയോ ക്ലിപ്പ് കാണുമ്പോൾ നിങ്ങളുടെ ആദ്യത്തെ പരിശോധനാ നടപടി എന്തായിരിക്കണം?",
+              explanation: "പ്രസംഗങ്ങളിൽ നിന്നുള്ള ചില വാക്യങ്ങൾ മാത്രം വെട്ടിമാറ്റി തെറ്റിദ്ധാരണ പരത്തുന്ന രീതി സാധാരണയാണ്. അതിനാൽ മുഴുവൻ പ്രസംഗത്തിന്റെ വീഡിയോ കണ്ടെത്തി സന്ദർഭം മനസ്സിലാക്കുകയാണ് പ്രാഥമിക പടി.",
+              sortOrder: 0,
+              options: {
+                create: [
+                  { label: "മുഴുവൻ പ്രസംഗത്തിന്റെ വീഡിയോ (Full Video) പരിശോധിച്ച് യഥാർത്ഥ സന്ദർഭം മനസ്സിലാക്കുക", isCorrect: true },
+                  { label: "വീഡിയോ ഉടൻ തന്നെ വാട്സ്ആപ്പ് ഗ്രൂപ്പുകളിലേക്ക് ഫോർവേഡ് ചെയ്യുക", isCorrect: false },
+                  { label: "കൂടുതൽ ലൈക്കുകളും ഷെയറുകളും ഉള്ളതിനാൽ അത് സത്യമാണെന്ന് വിശ്വസിക്കുക", isCorrect: false },
+                  { label: "കമന്റുകളിലെ അഭിപ്രായങ്ങൾ നോക്കി സത്യമാണോ എന്ന് തീരുമാനിക്കുക", isCorrect: false },
+                ],
+              },
+            },
+            {
+              question: "എഐ സാങ്കേതികവിദ്യ (AI Deepfake) ഉപയോഗിച്ച് നിർമ്മിച്ച വ്യാജ ചിത്രങ്ങൾ തിരിച്ചറിയാനുള്ള പ്രധാന അടയാളം എന്താണ്?",
+              explanation: "ജനറേറ്റീവ് എഐ നിർമ്മിക്കുന്ന ചിത്രങ്ങളിൽ പലപ്പോഴും വിരലുകളിലെ അപാകതകൾ, കൃത്രിമമായ ലൈറ്റിംഗ്, പശ്ചാത്തലത്തിലെ വളഞ്ഞ വരകൾ, ചെവിയിലെ ആഭരണങ്ങളുടെ പൊരുത്തക്കേടുകൾ എന്നിവ കാണാം.",
+              sortOrder: 1,
+              options: {
+                create: [
+                  { label: "കണ്ണുകളിലെ കൃത്രിമ പ്രതിഫലനം, വിരലുകളുടെ ഘടനയിലെ വ്യത്യാസം, പശ്ചാത്തലത്തിലെ വളഞ്ഞ വരകൾ", isCorrect: true },
+                  { label: "ചിത്രം ഉയർന്ന ഗുണമേന്മയുള്ള (HD) ആയതുകൊണ്ട്", isCorrect: false },
+                  { label: "ചിത്രത്തിലുള്ള വ്യക്തി ഔദ്യോഗിക വസ്ത്രം ധരിച്ചിരിക്കുന്നതുകൊണ്ട്", isCorrect: false },
+                  { label: "പകൽ വെളിച്ചത്തിൽ എടുത്ത ചിത്രമായതുകൊണ്ട്", isCorrect: false },
+                ],
+              },
+            },
+            {
+              question: "ഒരു ഓൺലൈൻ വാർത്തയുടെ ആധികാരികത പരിശോധിക്കുമ്പോൾ ശ്രദ്ധിക്കേണ്ട പ്രധാന കാര്യം എന്താണ്?",
+              explanation: "വാർത്ത പ്രസിദ്ധീകരിച്ച മാധ്യമ സ്ഥാപനത്തിന്റെ വിശ്വാസ്യത, ഔദ്യോഗിക സ്രോതസ്സുകൾ (Official Sources), വാർത്ത എഴുതിയ വ്യക്തിയുടെ വിവരങ്ങൾ എന്നിവ പരിശോധിക്കേണ്ടതാണ്.",
+              sortOrder: 2,
+              options: {
+                create: [
+                  { label: "ഔദ്യോഗിക സ്ഥിരീകരണവും (Official Sources) വിശ്വസനീയമായ മാധ്യമ റിപ്പോർട്ടുകളും ഉണ്ടോ എന്ന് പരിശോധിക്കുക", isCorrect: true },
+                  { label: "വാർത്തയുടെ തലക്കെട്ട് എത്രത്തോളം ആകർഷകമാണെന്ന് നോക്കുക", isCorrect: false },
+                  { label: "ഏതെങ്കിലും അജ്ഞാത ബ്ലോഗിൽ പ്രസിദ്ധീകരിച്ചിട്ടുണ്ടെങ്കിൽ വിശ്വസിക്കുക", isCorrect: false },
+                  { label: "വാട്സ്ആപ്പിൽ 'ഫ്രണ്ട്സ് ഫോർവേഡ് ചെയ്തത്' ആണെങ്കിൽ സത്യമായി കരുതുക", isCorrect: false },
                 ],
               },
             },

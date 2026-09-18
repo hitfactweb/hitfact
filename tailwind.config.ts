@@ -31,9 +31,11 @@ const config: Config = {
         },
       },
       fontFamily: {
-        headline: ["var(--font-space-grotesk)", "sans-serif"],
-        heading: ["var(--font-space-grotesk)", "sans-serif"],
-        sans: ["var(--font-inter)", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        headline: ["var(--font-space-grotesk)", "var(--font-anek-malayalam)", "sans-serif"],
+        heading: ["var(--font-space-grotesk)", "var(--font-anek-malayalam)", "sans-serif"],
+        sans: ["var(--font-inter)", "var(--font-anek-malayalam)", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        malayalam: ["var(--font-anek-malayalam)", "var(--font-inter)", "sans-serif"],
+        anek: ["var(--font-anek-malayalam)", "var(--font-inter)", "sans-serif"],
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
       },
       animation: {

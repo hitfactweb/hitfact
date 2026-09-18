@@ -3,8 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-heading: var(--font-space-grotesk), var(--font-sans);
+  --font-sans: var(--font-inter), var(--font-anek-malayalam), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-heading: var(--font-space-grotesk), var(--font-anek-malayalam), var(--font-sans);
+  --font-malayalam: var(--font-anek-malayalam), -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.font-malayalam, .font-anek {
+  font-family: var(--font-malayalam);
+  line-height: 1.65;
 }
 
 /* Base Body (Light mode by default for maximum accessibility and readability) */

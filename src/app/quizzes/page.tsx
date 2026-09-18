@@ -66,12 +66,12 @@ export default async function QuizzesPage({
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold truncate">{q.title}</span>
+                    <span className={`text-xs font-bold truncate ${/[\u0D00-\u0D7F]/.test(q.title) ? "font-malayalam text-sm" : ""}`}>{q.title}</span>
                     <span className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-zinc-600 dark:text-zinc-400 shrink-0">
                       {q.questions.length} Qs
                     </span>
                   </div>
-                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-1 mt-1">
+                  <p className={`text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-1 mt-1 ${/[\u0D00-\u0D7F]/.test(q.description) ? "font-malayalam leading-relaxed" : ""}`}>
                     {q.description}
                   </p>
                 </Link>
@@ -86,8 +86,8 @@ export default async function QuizzesPage({
         <div className="space-y-4">
           <div className="bg-zinc-50 dark:bg-zinc-900/60 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-bold text-zinc-900 dark:text-white">{activeQuiz.title}</h2>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">{activeQuiz.description}</p>
+              <h2 className={`text-sm font-bold text-zinc-900 dark:text-white ${/[\u0D00-\u0D7F]/.test(activeQuiz.title) ? "font-malayalam text-base" : ""}`}>{activeQuiz.title}</h2>
+              <p className={`text-xs text-zinc-600 dark:text-zinc-400 mt-0.5 ${/[\u0D00-\u0D7F]/.test(activeQuiz.description) ? "font-malayalam leading-relaxed" : ""}`}>{activeQuiz.description}</p>
             </div>
             <span className="text-xs font-bold text-purple-600 dark:text-purple-400 font-mono bg-purple-100 dark:bg-purple-950 px-2.5 py-1 rounded-lg shrink-0">
               Pass: {activeQuiz.passMark}%
