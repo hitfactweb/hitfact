@@ -135,22 +135,6 @@ export const Header: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0A0A0A]/95 backdrop-blur border-b border-zinc-200 dark:border-zinc-800 transition-colors">
-      {/* Top Brand Banner */}
-      <div className="bg-brand-red text-white text-[11px] font-bold tracking-widest px-4 py-1.5 flex items-center justify-between uppercase shadow-xs">
-        <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
-          <span className="bg-black text-white px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wider">
-            FACTS THAT HIT.
-          </span>
-          <span className="truncate text-xs font-semibold">
-            INDEPENDENT DIGITAL MEDIA & FACT-CHECKING PLATFORM
-          </span>
-        </div>
-        <div className="hidden md:flex items-center gap-4 text-[10px] tracking-wider font-bold">
-          <span>POLITICS • MEDIA • REALITY</span>
-          <span className="opacity-90">EVIDENCE OVER AFFILIATION</span>
-        </div>
-      </div>
-
       {/* Main Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
         {/* Brand Logo with exact user logos */}
