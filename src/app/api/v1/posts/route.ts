@@ -146,3 +146,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: err.message || "Failed to create post" }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    if (!id) {
+      return NextResponse.json({ error: "Post ID is required" }, { status: 400 });
+    }
+
+    await prisma.commentLike.deleteMany({ where: { comment: { postId: id } } });
+    await prisma.comment.deleteMany({ where: { postId: id } });
+    await prisma.like.deleteMany({ where: { postId: id } });
+    await prisma.save.deleteMany({ where: { postId: id } });
+    await prisma.factCheck.deleteMany({ where: { postId: id } });
+    await prisma.article.deleteMany({ where: { postId: id } });
+    await prisma.post.delete({ where: { id } });
+
+    return NextResponse.json({ success: true, message: "Post deleted successfully" });
+  } catch (err: any) {
+    console.error("Delete post error:", err);
+    return NextResponse.json({ error: err.message || "Failed to delete post" }, { status: 500 });
+  }
+}
