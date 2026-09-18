@@ -2,6 +2,7 @@ import React from "react";
 import { prisma } from "@/lib/db";
 import { PostCard } from "@/components/feed/PostCard";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { PollWidget } from "@/components/interactive/PollWidget";
 import Link from "next/link";
 import { Clock, Flame, PlusCircle, ShieldCheck } from "lucide-react";
 import { PostWithRelations } from "@/types";
@@ -61,6 +62,18 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       },
     },
     orderBy: currentView === "trending" ? { views: "desc" } : { publishedAt: "desc" },
+  });
+
+  // Fetch active poll for civic feed integration
+  const activePoll = await prisma.poll.findFirst({
+    include: {
+      options: {
+        include: { votes: true },
+        orderBy: { sortOrder: "asc" },
+      },
+      votes: true,
+    },
+    orderBy: { createdAt: "desc" },
   });
 
   const posts = postsRaw as unknown as PostWithRelations[];
@@ -133,11 +146,33 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </div>
           </div>
 
-          {/* Posts Stream */}
+          {/* Posts Stream with Featured Civic Poll Integration */}
           {posts.length > 0 ? (
             <div className="space-y-6">
-              {posts.map((post) => (
-                <PostCard key={post.id} post={post} />
+              {posts.map((post, idx) => (
+                <React.Fragment key={post.id}>
+                  <PostCard post={post} />
+                  {/* Insert Featured Civic Poll after the first story */}
+                  {idx === 0 && activePoll && (
+                    <div className="bg-white dark:bg-zinc-900/90 border border-blue-500/20 dark:border-blue-500/30 rounded-2xl p-5 shadow-xs transition-all">
+                      <div className="flex items-center gap-2 mb-3 text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                        <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                        <span>Live Civic Opinion Poll</span>
+                      </div>
+                      <PollWidget
+                        id={activePoll.id}
+                        question={activePoll.question}
+                        description={activePoll.description}
+                        options={activePoll.options.map((opt) => ({
+                          id: opt.id,
+                          label: opt.label,
+                          votesCount: opt.votes.length,
+                        }))}
+                        totalVotesCount={activePoll.votes.length}
+                      />
+                    </div>
+                  )}
+                </React.Fragment>
               ))}
             </div>
           ) : (

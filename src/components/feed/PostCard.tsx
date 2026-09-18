@@ -14,7 +14,15 @@ interface PostCardProps {
 export const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const isFactCheck = post.type === "FACT_CHECK" && post.factCheck;
   const isArticle = post.type === "ARTICLE" && post.article;
-  const mediaUrls: string[] = post.mediaUrls ? JSON.parse(post.mediaUrls) : [];
+  let mediaUrls: string[] = [];
+  if (post.mediaUrls) {
+    try {
+      const parsed = JSON.parse(post.mediaUrls);
+      mediaUrls = Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      mediaUrls = [post.mediaUrls];
+    }
+  }
 
   const postLink = isFactCheck
     ? `/fact-checks/${post.slug}`

@@ -70,11 +70,28 @@ export async function POST(req: Request) {
       .replace(/(^-|-$)+/g, "");
     const slug = `${baseSlug}-${Date.now().toString().slice(-4)}`;
 
-    // Fallback author
+    // Ensure author exists in DB, fallback to super admin
     let validAuthorId = authorId;
-    if (!validAuthorId) {
-      const defaultAdmin = await prisma.user.findFirst();
+    let authorExists = false;
+    if (validAuthorId) {
+      const existing = await prisma.user.findUnique({ where: { id: validAuthorId } });
+      if (existing) authorExists = true;
+    }
+
+    if (!authorExists) {
+      const defaultAdmin =
+        (await prisma.user.findFirst({ where: { role: "SUPER_ADMIN" } })) ||
+        (await prisma.user.findFirst());
       validAuthorId = defaultAdmin?.id || "usr_admin";
+    }
+
+    // Resolve categoryId by ID or Slug if provided
+    let validCategoryId = categoryId || null;
+    if (validCategoryId) {
+      const cat = await prisma.category.findFirst({
+        where: { OR: [{ id: validCategoryId }, { slug: validCategoryId }] },
+      });
+      validCategoryId = cat?.id || null;
     }
 
     const mediaUrls = mediaUrl ? JSON.stringify([mediaUrl]) : null;
@@ -88,7 +105,7 @@ export async function POST(req: Request) {
         mediaUrls,
         status: status || "PUBLISHED",
         authorId: validAuthorId,
-        categoryId: categoryId || null,
+        categoryId: validCategoryId,
         publishedAt: new Date(),
         ...(type === "ARTICLE" && {
           article: {

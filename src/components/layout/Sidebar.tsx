@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Flame, ShieldCheck, ArrowUpRight } from "lucide-react";
+import { Flame, ShieldCheck, ArrowUpRight, CheckSquare, HelpCircle, ArrowRight } from "lucide-react";
 import { FactCheckBadge } from "@/components/feed/FactCheckBadge";
+import { PollWidget } from "@/components/interactive/PollWidget";
 
 interface LatestFactCheck {
   id: string;
@@ -13,10 +14,34 @@ interface LatestFactCheck {
   claim: string;
 }
 
+interface ActivePoll {
+  id: string;
+  question: string;
+  description: string | null;
+  options: {
+    id: string;
+    label: string;
+    votesCount?: number;
+  }[];
+  totalVotesCount: number;
+}
+
+interface ActiveQuiz {
+  id: string;
+  title: string;
+  description: string;
+  slug: string;
+  passMark: number;
+  questionCount: number;
+}
+
 export const Sidebar: React.FC = () => {
   const [latestChecks, setLatestChecks] = useState<LatestFactCheck[]>([]);
+  const [activePoll, setActivePoll] = useState<ActivePoll | null>(null);
+  const [activeQuiz, setActiveQuiz] = useState<ActiveQuiz | null>(null);
 
   useEffect(() => {
+    // 1. Fetch latest fact checks
     fetch("/api/v1/posts?type=FACT_CHECK&limit=3")
       .then((res) => res.json())
       .then((data) => {
@@ -30,6 +55,45 @@ export const Sidebar: React.FC = () => {
               claim: p.factCheck?.claim || p.title,
             }))
           );
+        }
+      })
+      .catch(() => {});
+
+    // 2. Fetch active civic poll
+    fetch("/api/v1/polls")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.polls && Array.isArray(data.polls) && data.polls.length > 0) {
+          const p = data.polls[0];
+          setActivePoll({
+            id: p.id,
+            question: p.question,
+            description: p.description,
+            options: (p.options || []).map((o: any) => ({
+              id: o.id,
+              label: o.label,
+              votesCount: o.votes?.length || 0,
+            })),
+            totalVotesCount: p.votes?.length || 0,
+          });
+        }
+      })
+      .catch(() => {});
+
+    // 3. Fetch active quiz
+    fetch("/api/v1/quizzes")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.quizzes && Array.isArray(data.quizzes) && data.quizzes.length > 0) {
+          const q = data.quizzes[0];
+          setActiveQuiz({
+            id: q.id,
+            title: q.title,
+            description: q.description,
+            slug: q.slug,
+            passMark: q.passMark,
+            questionCount: q.questions?.length || 0,
+          });
         }
       })
       .catch(() => {});
@@ -88,6 +152,61 @@ export const Sidebar: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Featured Civic Poll Widget */}
+      {activePoll && (
+        <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-brand-border rounded-2xl p-5 shadow-xs transition-colors">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <CheckSquare className="w-4 h-4 text-blue-500" />
+              <span className="text-xs font-bold uppercase tracking-widest text-zinc-900 dark:text-white">
+                Featured Civic Poll
+              </span>
+            </div>
+            <Link
+              href="/polls"
+              className="text-[11px] text-zinc-500 hover:text-blue-500 font-bold flex items-center gap-0.5"
+            >
+              All Polls <ArrowUpRight className="w-3 h-3" />
+            </Link>
+          </div>
+          <PollWidget
+            id={activePoll.id}
+            question={activePoll.question}
+            description={activePoll.description}
+            options={activePoll.options}
+            totalVotesCount={activePoll.totalVotesCount}
+          />
+        </div>
+      )}
+
+      {/* Featured Media Literacy Quiz Widget */}
+      {activeQuiz && (
+        <div className="bg-gradient-to-br from-purple-900/30 to-zinc-900/80 border border-purple-500/30 rounded-2xl p-5 shadow-xs transition-colors space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <HelpCircle className="w-4 h-4 text-purple-400" />
+              <span className="text-xs font-bold uppercase tracking-widest text-white">
+                Media Literacy Challenge
+              </span>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+              {activeQuiz.questionCount} Questions
+            </span>
+          </div>
+          <div>
+            <h4 className="text-xs font-bold text-white line-clamp-2">{activeQuiz.title}</h4>
+            <p className="text-[11px] text-zinc-400 line-clamp-2 mt-1">{activeQuiz.description}</p>
+          </div>
+          <Link
+            href={`/quizzes?quizId=${activeQuiz.id}`}
+            className="flex items-center justify-center gap-1.5 w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
+          >
+            <span>Take Challenge</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      )}
 
       {/* Editorial Core Desks */}
       <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-brand-border rounded-2xl p-5 shadow-xs transition-colors">

@@ -44,10 +44,16 @@ export default function NewPostPage() {
   const [analysis, setAnalysis] = useState("");
   const [verdict, setVerdict] = useState<VerdictType>("FALSE");
 
+  const [categorySlug, setCategorySlug] = useState("politics");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
+    setErrorMessage(null);
+    setSuccessMessage(null);
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/v1/posts", {
@@ -60,6 +66,7 @@ export default function NewPostPage() {
           mediaUrl,
           status,
           authorId: currentUser?.id || "usr_admin",
+          categoryId: categorySlug,
           summary,
           bodyText,
           readingTime,
@@ -76,18 +83,22 @@ export default function NewPostPage() {
 
       const data = await res.json();
       if (data.success && data.post) {
-        if (postType === "FACT_CHECK") {
-          router.push(`/fact-checks/${data.post.slug}`);
-        } else if (postType === "ARTICLE") {
-          router.push(`/articles/${data.post.slug}`);
-        } else {
-          router.push("/");
-        }
+        setSuccessMessage("Story published successfully! Refreshing feed...");
+        router.refresh();
+        setTimeout(() => {
+          if (postType === "FACT_CHECK") {
+            router.push(`/fact-checks/${data.post.slug}`);
+          } else if (postType === "ARTICLE") {
+            router.push(`/articles/${data.post.slug}`);
+          } else {
+            router.push("/");
+          }
+        }, 600);
       } else {
-        alert(data.error || "Failed to create post");
+        setErrorMessage(data.error || "Failed to create post. Please check all fields.");
       }
     } catch (err: any) {
-      alert("Error creating post: " + err.message);
+      setErrorMessage("Error creating post: " + err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -110,6 +121,20 @@ export default function NewPostPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {errorMessage && (
+          <div className="p-4 bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900 rounded-xl text-xs font-semibold text-red-700 dark:text-red-400 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-red-500" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="p-4 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-900 rounded-xl text-xs font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span>{successMessage}</span>
+          </div>
+        )}
+
         {/* Post Type Selector */}
         <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 p-4 rounded-xl space-y-2 shadow-xs">
           <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
@@ -133,6 +158,35 @@ export default function NewPostPage() {
               >
                 {fmt.icon}
                 <span>{fmt.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Editorial Desk / Category Selector */}
+        <div className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 p-4 rounded-xl space-y-2 shadow-xs">
+          <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+            Select Editorial Desk (Category)
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            {[
+              { slug: "politics", name: "Politics" },
+              { slug: "media", name: "Media" },
+              { slug: "reality-check", name: "Reality Check" },
+              { slug: "economy", name: "Economy" },
+              { slug: "science-ai", name: "Science & AI" },
+            ].map((cat) => (
+              <button
+                type="button"
+                key={cat.slug}
+                onClick={() => setCategorySlug(cat.slug)}
+                className={`p-2.5 rounded-lg border text-xs font-semibold text-center transition-all ${
+                  categorySlug === cat.slug
+                    ? "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-zinc-900 dark:border-white font-bold shadow-xs"
+                    : "bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700"
+                }`}
+              >
+                {cat.name}
               </button>
             ))}
           </div>
